@@ -1703,6 +1703,10 @@ function w3_redirect($url = '', $params = array()) {
  */
 function w3_get_engine_name($engine) {
     switch ($engine) {
+        case 'memcache':
+            $engine_name = 'memcache';
+            break;
+
         case 'memcached':
             $engine_name = 'memcached';
             break;

@@ -77,6 +77,7 @@
                         <option value="wincache"<?php selected($this->_config->get_string('pgcache.engine'), 'wincache'); ?><?php if (! $check_wincache): ?> disabled="disabled"<?php endif; ?>>Opcode: WinCache</option>
                         </optgroup>
                         <optgroup label="Multiple Servers:">
+                            <option value="memcache"<?php selected($this->_config->get_string('pgcache.engine'), 'memcache'); ?><?php if (! $check_memcache): ?> disabled="disabled"<?php endif; ?>>Memcache</option>
                             <option value="memcached"<?php selected($this->_config->get_string('pgcache.engine'), 'memcached'); ?><?php if (! $check_memcached): ?> disabled="disabled"<?php endif; ?>>Memcached</option>
                         </optgroup>
                     </select>
@@ -124,6 +125,7 @@
                             <option value="wincache"<?php selected($this->_config->get_string('minify.engine'), 'wincache'); ?><?php if (! $check_wincache): ?> disabled="disabled"<?php endif; ?>>Opcode: WinCache</option>
                         </optgroup>
                             <optgroup label="Multiple Servers:">
+                            <option value="memcache"<?php selected($this->_config->get_string('pgcache.engine'), 'memcache'); ?><?php if (! $check_memcache): ?> disabled="disabled"<?php endif; ?>>Memcache</option>    
                             <option value="memcached"<?php selected($this->_config->get_string('minify.engine'), 'memcached'); ?><?php if (! $check_memcached): ?> disabled="disabled"<?php endif; ?>>Memcached</option>
                         </optgroup>
                     </select>
@@ -192,6 +194,7 @@
                             <option value="wincache"<?php selected($this->_config->get_string('dbcache.engine'), 'wincache'); ?><?php if (! $check_wincache): ?> disabled="disabled"<?php endif; ?>>Opcode: WinCache</option>
                     </optgroup>
                         <optgroup label="Multiple Servers:">
+                            <option value="memcache"<?php selected($this->_config->get_string('pgcache.engine'), 'memcache'); ?><?php if (! $check_memcache): ?> disabled="disabled"<?php endif; ?>>Memcache</option>
                             <option value="memcached"<?php selected($this->_config->get_string('dbcache.engine'), 'memcached'); ?><?php if (! $check_memcached): ?> disabled="disabled"<?php endif; ?>>Memcached</option>
                         </optgroup>
                     </select>
@@ -231,6 +234,7 @@
                             <option value="wincache"<?php selected($this->_config->get_string('objectcache.engine'), 'wincache'); ?><?php if (! $check_wincache): ?> disabled="disabled"<?php endif; ?>>Opcode: WinCache</option>
                     </optgroup>
                         <optgroup label="Multiple Servers:">
+                            <option value="memcache"<?php selected($this->_config->get_string('pgcache.engine'), 'memcache'); ?><?php if (! $check_memcache): ?> disabled="disabled"<?php endif; ?>>Memcache</option>
                             <option value="memcached"<?php selected($this->_config->get_string('objectcache.engine'), 'memcached'); ?><?php if (! $check_memcached): ?> disabled="disabled"<?php endif; ?>>Memcached</option>
                         </optgroup>
                     </select>

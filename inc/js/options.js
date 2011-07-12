@@ -704,6 +704,21 @@ jQuery(function() {
         }
     });
 
+    jQuery('#memcache_test').click(function() {
+        var status = jQuery('#memcache_test_status');
+        status.removeClass('w3tc-error');
+        status.removeClass('w3tc-success');
+        status.addClass('w3tc-process');
+        status.html('Testing...');
+        jQuery.post('admin.php?page=w3tc_general', {
+            w3tc_action: 'test_memcache',
+            servers: jQuery('#memcache_servers').val()
+        }, function(data) {
+            status.addClass(data.result ? 'w3tc-success' : 'w3tc-error');
+            status.html(data.error);
+        }, 'json');
+    });
+
     jQuery('#memcached_test').click(function() {
         var status = jQuery('#memcached_test_status');
         status.removeClass('w3tc-error');
@@ -712,7 +727,7 @@ jQuery(function() {
         status.html('Testing...');
         jQuery.post('admin.php?page=w3tc_general', {
             w3tc_action: 'test_memcached',
-            servers: jQuery('#memcached_servers').val()
+            servers: jQuery('#memcache_servers').val()
         }, function(data) {
             status.addClass(data.result ? 'w3tc-success' : 'w3tc-error');
             status.html(data.error);

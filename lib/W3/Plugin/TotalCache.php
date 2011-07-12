@@ -2051,7 +2051,8 @@ class W3_Plugin_TotalCache extends W3_Plugin {
         $check_xcache = function_exists('xcache_set');
         $check_wincache = function_exists('wincache_ucache_set');
         $check_curl = function_exists('curl_init');
-        $check_memcached = class_exists('Memcache');
+        $check_memcache = class_exists('Memcache');
+        $check_memcached = class_exists('Memcached');
         $check_ftp = function_exists('ftp_connect');
         $check_tidy = class_exists('tidy');
 
@@ -4591,6 +4592,33 @@ class W3_Plugin_TotalCache extends W3_Plugin {
         $key = md5(serialize($servers));
 
         if (!isset($results[$key])) {
+            require_once W3TC_LIB_W3_DIR . '/Cache/Memcache.php';
+
+            $memcache = & new W3_Cache_Memcache(array(
+                'servers' => $servers,
+                'persistant' => false
+            ));
+
+            $test_string = sprintf('test_' . md5(time()));
+            $memcache->set($test_string, $test_string, 60);
+
+            $results[$key] = ($memcache->get($test_string) == $test_string);
+        }
+
+        return $results[$key];
+    }
+
+    /**
+     * Check if memcached is available
+     *
+     * @param array $servers
+     * @return boolean
+     */
+    function is_memcached_available($servers) {
+        static $results = array();
+        $key = md5(serialize($servers));
+
+        if (!isset($results[$key])) {
             require_once W3TC_LIB_W3_DIR . '/Cache/Memcached.php';
 
             $memcached = & new W3_Cache_Memcached(array(
@@ -4608,6 +4636,30 @@ class W3_Plugin_TotalCache extends W3_Plugin {
     }
 
     /**
+     * Test memcache
+     */
+    function test_memcache() {
+        require_once W3TC_LIB_W3_DIR . '/Request.php';
+
+        $servers = W3_Request::get_array('servers');
+
+        if ($this->is_memcache_available($servers)) {
+            $result = true;
+            $error = 'Test passed.';
+        } else {
+            $result = false;
+            $error = 'Test failed.';
+        }
+
+        $response = array(
+            'result' => $result,
+            'error' => $error
+        );
+
+        echo json_encode($response);
+    }
+
+    /**
      * Test memcached
      */
     function test_memcached() {
@@ -4615,7 +4667,7 @@ class W3_Plugin_TotalCache extends W3_Plugin {
 
         $servers = W3_Request::get_array('servers');
 
-        if ($this->is_memcache_available($servers)) {
+        if ($this->is_memcached_available($servers)) {
             $result = true;
             $error = 'Test passed.';
         } else {

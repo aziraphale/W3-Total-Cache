@@ -111,6 +111,15 @@
         </li>
 
         <li>
+            Memcached extension:
+            <?php if (class_exists('Memcached')): ?>
+            <code>Installed</code>
+            <?php else: ?>
+            <code>Not installed</code>
+            <?php endif; ?>
+        </li>
+
+        <li>
             HTML Tidy extension:
             <?php if (class_exists('tidy')): ?>
             <code>Installed</code>

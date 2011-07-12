@@ -575,14 +575,24 @@ class W3_Minify {
 
         if (!isset($cache[0])) {
             switch ($this->_config->get_string('minify.engine')) {
-                case 'memcached':
-                    require_once W3TC_LIB_W3_DIR . '/Cache/Memcached.php';
+                case 'memcache':
+                    require_once W3TC_LIB_W3_DIR . '/Cache/Memcache.php';
                     require_once W3TC_LIB_MINIFY_DIR . '/Minify/Cache/Memcache.php';
-                    $w3_cache_memcached = & new W3_Cache_Memcached(array(
+                    $W3_Cache_Memcache = & new W3_Cache_Memcache(array(
                         'servers' => $this->_config->get_array('minify.memcached.servers'),
                         'persistant' => $this->_config->get_boolean('minify.memcached.persistant')
                     ));
-                    $cache[0] = & new Minify_Cache_Memcache($w3_cache_memcached);
+                    $cache[0] = & new Minify_Cache_Memcache($W3_Cache_Memcache);
+                    break;
+
+                case 'memcached':
+                    require_once W3TC_LIB_W3_DIR . '/Cache/Memcached.php';
+                    require_once W3TC_LIB_MINIFY_DIR . '/Minify/Cache/Memcache.php';
+                    $W3_Cache_Memcached = & new W3_Cache_Memcached(array(
+                        'servers' => $this->_config->get_array('minify.memcached.servers'),
+                        'persistant' => $this->_config->get_boolean('minify.memcached.persistant')
+                    ));
+                    $cache[0] = & new Minify_Cache_Memcache($W3_Cache_Memcached);
                     break;
 
                 case 'apc':

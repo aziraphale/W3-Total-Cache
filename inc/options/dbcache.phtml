@@ -34,9 +34,9 @@
 
 		<?php echo $this->postbox_header('Advanced'); ?>
         <table class="form-table">
-        	<?php if ($this->_config->get_string('dbcache.engine') == 'memcached'): ?>
+        	<?php if ($this->_config->get_string('dbcache.engine') == 'memcache'): ?>
         	<tr>
-        		<th><label for="memcached_servers">Memcached hostname:port / <acronym title="Internet Protocol">IP</acronym>:port:</label></th>
+        		<th><label for="memcached_servers">Memcache hostname:port / <acronym title="Internet Protocol">IP</acronym>:port:</label></th>
         		<td>
         			<input id="memcached_servers" type="text" name="dbcache.memcached.servers" value="<?php echo htmlspecialchars(implode(',', $this->_config->get_array('dbcache.memcached.servers'))); ?>" size="100" />
         			<input id="memcached_test" class="button" type="button" value="Test" />

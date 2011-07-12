@@ -7,6 +7,10 @@
 /**
  * W3 Cache engine types
  */
+if (!defined('W3TC_CACHE_MEMCACHE')) {
+    define('W3TC_CACHE_MEMCACHE', 'memcache');
+}
+
 if (!defined('W3TC_CACHE_MEMCACHED')) {
     define('W3TC_CACHE_MEMCACHED', 'memcached');
 }
@@ -53,6 +57,11 @@ class W3_Cache {
 
         if (!isset($instances[$instance_key])) {
             switch ($engine) {
+                case W3TC_CACHE_MEMCACHE:
+                    require_once W3TC_LIB_W3_DIR . '/Cache/Memcache.php';
+                    $instances[$instance_key] = & new W3_Cache_Memcache($config);
+                    break;
+
                 case W3TC_CACHE_MEMCACHED:
                     require_once W3TC_LIB_W3_DIR . '/Cache/Memcached.php';
                     $instances[$instance_key] = & new W3_Cache_Memcached($config);
