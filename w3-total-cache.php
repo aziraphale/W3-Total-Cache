@@ -2,7 +2,7 @@
 /*
 Plugin Name: W3 Total Cache
 Description: The highest rated and most complete WordPress performance plugin. Dramatically improve the speed and user experience of your site. Add browser, page, object and database caching as well as minify and content delivery network (CDN) to WordPress. <strong>***NOTE*** This is a Forked version of W3 Total Cache adding support for the PHP Memcached extension. Updating this extension using the wordpress updater will overwrite the forked version with the original by Frederick Townes.</strong>
-Version: 0.9.2.2
+Version: 0.9.2.3
 Plugin URI: https://github.com/rickoman/W3-Total-Cache
 Author: Rick Overman
 Author URI: https://github.com/rickoman/
