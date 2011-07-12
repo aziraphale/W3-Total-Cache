@@ -1,10 +1,26 @@
 <?php
 
-require_once W3TC_LIB_W3_DIR . '/Cache/File/Manager.php';
+/**
+ * Generic file cache cleaner class
+ */
+require_once W3TC_LIB_W3_DIR . '/Cache/File/Cleaner.php';
 
-class W3_Cache_File_PgCache_Manager extends W3_Cache_File_Manager {
+/**
+ * Class W3_Cache_File_Cleaner_Generic
+ */
+class W3_Cache_File_Cleaner_Generic extends W3_Cache_File_Cleaner {
+    /**
+     * Cache expire time
+     *
+     * @var int
+     */
     var $_expire = 0;
 
+    /**
+     * PHP5-style constructor
+     *
+     * @param array $config
+     */
     function __construct($config = array()) {
         parent::__construct($config);
 
@@ -15,15 +31,23 @@ class W3_Cache_File_PgCache_Manager extends W3_Cache_File_Manager {
         }
     }
 
-    function W3_Cache_File_PgCache_Manager($config = array()) {
+    /**
+     * PHP4-style constructor
+     *
+     * @param array $config
+     * @return void
+     */
+    function W3_Cache_File_Cleaner_Generic($config = array()) {
         $this->__construct($config);
     }
 
+    /**
+     * Checks if file is valid
+     *
+     * @param string $file
+     * @return bool
+     */
     function is_valid($file) {
-        if ($file == $this->_cache_dir . '/.htaccess') {
-            return true;
-        }
-
         if (file_exists($file)) {
             $ftime = @filemtime($file);
 

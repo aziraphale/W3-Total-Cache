@@ -1,14 +1,14 @@
 <?php
 
 /**
- * File cache for Page cache
+ * Generic file cache
  */
 require_once W3TC_LIB_W3_DIR . '/Cache/File.php';
 
 /**
- * Class W3_Cache_File_PgCache
+ * Class W3_Cache_File_Generic
  */
-class W3_Cache_File_PgCache extends W3_Cache_File {
+class W3_Cache_File_Generic extends W3_Cache_File {
     /**
      * Expire
      *
@@ -17,10 +17,9 @@ class W3_Cache_File_PgCache extends W3_Cache_File {
     var $_expire = 0;
 
     /**
-     * PHP5 style constructor
+     * PHP5-style constructor
      *
      * @param array $config
-     * @return void
      */
     function __construct($config = array()) {
         parent::__construct($config);
@@ -33,11 +32,11 @@ class W3_Cache_File_PgCache extends W3_Cache_File {
     }
 
     /**
-     * PHP4 style constructor
+     * PHP4-style constructor
+     *
      * @param array $config
-     * @return void
      */
-    function W3_Cache_File_PgCache($config = array()) {
+    function W3_Cache_File_Generic($config = array()) {
         $this->__construct($config);
     }
 
@@ -114,21 +113,6 @@ class W3_Cache_File_PgCache extends W3_Cache_File {
         }
 
         return $var;
-    }
-
-    /**
-     * Flushes all data
-     *
-     * @return boolean
-     */
-    function flush() {
-        @set_time_limit($this->_flush_timelimit);
-
-        w3_emptydir($this->_cache_dir, array(
-            $this->_cache_dir . '/.htaccess'
-        ));
-
-        return true;
     }
 
     /**
