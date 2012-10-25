@@ -927,7 +927,7 @@ class W3_Config {
                     case ($value == 'eaccelerator' && !function_exists('eaccelerator_put')):
                     case ($value == 'xcache' && !function_exists('xcache_set')):
                     case ($value == 'wincache' && !function_exists('wincache_ucache_set')):
-                    case ($value == 'memcached' && !class_exists('Memcache')):
+                    case ($value == 'memcached' && !class_exists('Memcache') && !class_exists('Memcached')):
                         return 'file';
                 }
                 break;

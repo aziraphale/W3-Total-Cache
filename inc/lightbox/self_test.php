@@ -112,7 +112,7 @@ require_once W3TC_INC_DIR . '/functions/rule.php';
 
         <li>
             Memcache extension:
-            <?php if (class_exists('Memcache')): ?>
+            <?php if (class_exists('Memcache') || class_exists('Memcached')): ?>
             <code>Installed</code>
             <?php else: ?>
             <code>Not installed</code>

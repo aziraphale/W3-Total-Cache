@@ -1242,7 +1242,7 @@ class W3_Plugin_TotalCacheAdmin extends W3_Plugin {
         $check_xcache = function_exists('xcache_set');
         $check_wincache = function_exists('wincache_ucache_set');
         $check_curl = function_exists('curl_init');
-        $check_memcached = class_exists('Memcache');
+        $check_memcached = class_exists('Memcache') || class_exists('Memcached');
         $check_ftp = function_exists('ftp_connect');
         $check_tidy = class_exists('tidy');
 
