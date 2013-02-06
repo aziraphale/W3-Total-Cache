@@ -7,7 +7,7 @@ if (!defined('W3TC')) {
     die();
 }
 
-require_once W3TC_LIB_W3_DIR . '/Cache/Base.php';
+w3_require_once(W3TC_LIB_W3_DIR . '/Cache/Base.php');
 
 /**
  * Class W3_Cache_Memcached
@@ -18,25 +18,34 @@ class W3_Cache_Memcached extends W3_Cache_Base {
      *
      * @var Memcache
      */
-    var $_memcache = null;
+    private $_memcache = null;
     
     /**
      * Memcached object
      *
      * @var Memcached
      */
-    var $_memcached = null;
+    private $_memcached = null;
+
+    /*
+     * Used for faster flushing
+     *
+     * @var integer $_key_version
+     */
+    private $_key_version = array();
 
     /**
-     * PHP5 constructor
+     * constructor
      *
      * @param array $config
      */
     function __construct($config) {
+        parent::__construct($config);
+
         if (class_exists('Memcached')) {
-            @$this->_memcached = & new Memcached();
+            $this->_memcached = new Memcached();
         } elseif (class_exists('Memcache')) {
-            @$this->_memcache = & new Memcache();
+            $this->_memcache = new Memcache();
         } else {
             return false;
         }
@@ -50,9 +59,14 @@ class W3_Cache_Memcached extends W3_Cache_Base {
                 $port = (int) trim($port);
                 
                 if ($this->_memcached) {
-                    $this->_memcached->addServer($ip, $port);
+                    $this->_memcached->addServer(trim($ip), (integer) trim($port));
                 } else {
-                    $this->_memcache->addServer($ip, $port, $persistant);
+                    if (substr($server, 0, 5) == 'unix:')
+                        $this->_memcache->addServer(trim($server), 0, $persistant);
+                    else {
+                        list($ip, $port) = explode(':', $server);
+                        $this->_memcache->addServer(trim($ip), (integer) trim($port), $persistant);
+                    }
                 }
             }
         } else {
@@ -69,28 +83,20 @@ class W3_Cache_Memcached extends W3_Cache_Base {
     }
 
     /**
-     * PHP4 constructor
-     *
-     * @param array $config
-     */
-    function W3_Cache_Memcached($config) {
-        $this->__construct($config);
-    }
-
-    /**
      * Adds data
      *
      * @param string $key
      * @param mixed $var
      * @param integer $expire
+     * @param string $group Used to differentiate between groups of cache values
      * @return boolean
      */
-    function add($key, &$var, $expire = 0) {
-        if ($this->_memcached) {
-            return @$this->_memcached->add($key, $var, $expire);
-        } else {
-            return @$this->_memcache->add($key, $var, false, $expire);
-        }
+    function add($key, &$var, $expire = 0, $group = '0') {
+        return $this->set($key, $var, $expire, $group);
+
+
+
+
     }
 
     /**
@@ -99,13 +105,19 @@ class W3_Cache_Memcached extends W3_Cache_Base {
      * @param string $key
      * @param mixed $var
      * @param integer $expire
+     * @param string $group Used to differentiate between groups of cache values
      * @return boolean
      */
-    function set($key, &$var, $expire = 0) {
+    function set($key, &$var, $expire = 0, $group = '0') {
+        $key = $this->get_item_key($key);
+
+        $var['key_version'] = $this->_get_key_version($group);
+        
         if ($this->_memcached) {
-            return @$this->_memcached->set($key, $var, $expire);
+            return @$this->_memcached->set($key . '_' . $this->_blog_id, $var, $expire);
         } else {
-            return @$this->_memcache->set($key, $var, false, $expire);
+            return @$this->_memcache->set($key . '_' . $this->_blog_id, $var,
+                false, $expire);
         }
     }
 
@@ -113,14 +125,49 @@ class W3_Cache_Memcached extends W3_Cache_Base {
      * Returns data
      *
      * @param string $key
+     * @param string $group Used to differentiate between groups of cache values
      * @return mixed
      */
-    function get($key) {
+    function get($key, $group = '0') {
+        $key = $this->get_item_key($key);
+
         if ($this->_memcached) {
-            return @$this->_memcached->get($key);
+            $v = @$this->_memcached->get($key . '_' . $this->_blog_id);
         } else {
-            return @$this->_memcache->get($key);
+            $v = @$this->_memcache->get($key . '_' . $this->_blog_id);
         }
+        if (!is_array($v) || !isset($v['key_version']))
+            return null;
+
+        $key_version = $this->_get_key_version($group);
+        if ($v['key_version'] == $key_version)
+            return $v;
+
+        if ($v['key_version'] > $key_version) {
+            $this->_set_key_version($v['key_version'], $group);
+            return $v;
+        }
+
+        // key version is old
+        if (!$this->_use_expired_data)
+            return null;
+
+        // if we have expired data - update it for future use and let
+        // current process recalculate it
+        $expires_at = isset($v['expires_at']) ? $v['expires_at'] : null;
+        if ($expires_at == null || time() > $expires_at) {
+            $v['expires_at'] = time() + 30;
+            if ($this->_memcached) {
+                @$this->_memcached->set($key . '_' . $this->_blog_id, $v, 0);
+            } else {
+                @$this->_memcache->set($key . '_' . $this->_blog_id, $v, false, 0);
+            }
+
+            return null;
+        }
+
+        // return old version
+        return $v;
     }
 
     /**
@@ -129,14 +176,11 @@ class W3_Cache_Memcached extends W3_Cache_Base {
      * @param string $key
      * @param mixed $var
      * @param integer $expire
+     * @param string $group Used to differentiate between groups of cache values
      * @return boolean
      */
-    function replace($key, &$var, $expire = 0) {
-        if ($this->_memcached) {
-            return @$this->_memcached->replace($key, $var, $expire);
-        } else {
-            return @$this->_memcache->replace($key, $var, false, $expire);
-        }
+    function replace($key, &$var, $expire = 0, $group = '0') {
+        return $this->set($key, $var, $expire, $group);
     }
 
     /**
@@ -146,23 +190,69 @@ class W3_Cache_Memcached extends W3_Cache_Base {
      * @return boolean
      */
     function delete($key) {
+        $key = $this->get_item_key($key);
+
+        if ($this->_use_expired_data) {
+            if ($this->_memcached) {
+                $v = @$this->_memcached->get($key . '_' . $this->_blog_id);
+            } else {
+                $v = @$this->_memcache->get($key . '_' . $this->_blog_id);
+            }
+            if (is_array($v)) {
+                $v['key_version'] = 0;
+                if ($this->_memcached) {
+                    @$this->_memcached->set($key . '_' . $this->_blog_id, $v, 0);
+                } else {
+                    @$this->_memcache->set($key . '_' . $this->_blog_id, $v, false, 0);
+                }
+                return true;
+            }
+        }
         if ($this->_memcached) {
-            return @$this->_memcached->delete($key);
+            return @$this->_memcached->delete($key . '_' . $this->_blog_id);
         } else {
-            return @$this->_memcache->delete($key);
+            return @$this->_memcache->delete($key . '_' . $this->_blog_id, 0);
         }
     }
 
     /**
      * Flushes all data
      *
+     * @param string $group Used to differentiate between groups of cache values
      * @return boolean
      */
-    function flush() {
-        if ($this->_memcached) {
-            return @$this->_memcached->flush();
-        } else {
-            return @$this->_memcache->flush();
+    function flush($group = '0') {
+        $this->_get_key_version($group);   // initialize $this->_key_version
+        $this->_key_version[$group]++;
+        $this->_set_key_version($this->_key_version[$group], $group);
+        return true;
+
+    }
+
+    /**
+     * Returns key version
+     *
+     * @param string $group Used to differentiate between groups of cache values
+     * @return integer
+     */
+    private function _get_key_version($group = '0') {
+        if (!isset($this->_key_version[$group]) || $this->_key_version[$group] <= 0) {
+            $v = @$this->_memcache->get($this->_get_key_version_key($group));
+            $v = intval($v);
+            $this->_key_version[$group] = ($v > 0 ? $v : 1);
         }
+
+        return $this->_key_version[$group];
+    }
+
+    /**
+     * Sets new key version
+     *
+     * @param $v
+     * @param string $group Used to differentiate between groups of cache values
+     * @return boolean
+     */
+    private function _set_key_version($v, $group = '0') {
+        @$this->_memcache->set($this->_get_key_version_key($group), $v, false, 0);
     }
 }
